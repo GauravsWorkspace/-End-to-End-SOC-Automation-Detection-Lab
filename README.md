@@ -7,11 +7,17 @@ This project involved building a fully functional **Security Operations Center (
 
 ## 🏗️ Lab Architecture
 * **Attacker (Host OS):** Kali Linux (`192.168.56.1`)
-* ![Attacker Machine](img/Attacker_Machine.png)
+  
+ ![Attacker Machine](img/Attacker_Machine.png)
+ 
 * **Victim (VM):** Windows 10 (`192.168.56.3`)
-* ![Victim VM](img/Victime_VM.png)
+
+ ![Victim VM](img/Victime_VM.png)
+
 * **SIEM/XDR (VM):** Wazuh Manager (`192.168.56.4`)
-* ![Wazuh](img/Wazuh_manager.png)
+
+ ![Wazuh](img/Wazuh_manager.png)
+
 
 > **Note:** The environment was built using **Oracle VirtualBox** in a dedicated **Host-Only Network** to ensure safe, isolated testing.
 
