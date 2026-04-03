@@ -7,8 +7,11 @@ This project involved building a fully functional **Security Operations Center (
 
 ## 🏗️ Lab Architecture
 * **Attacker (Host OS):** Kali Linux (`192.168.56.1`)
+* ![Attacker Machine](img/Attacker_Machine.png)
 * **Victim (VM):** Windows 10 (`192.168.56.3`)
+* ![Victim VM](img/attack.png)
 * **SIEM/XDR (VM):** Wazuh Manager (`192.168.56.4`)
+* ![Wazuh](img/attack.png)
 
 > **Note:** The environment was built using **Oracle VirtualBox** in a dedicated **Host-Only Network** to ensure safe, isolated testing.
 
@@ -32,17 +35,22 @@ This project involved building a fully functional **Security Operations Center (
 
 ### Phase 2: The Attack (SMB Brute Force)
 * **Command:** `hydra -l vboxuser -P wordlist.txt smb://192.168.56.3 -t 1 -V`
+* ![Hydra Attack](img/Hydra_Use.png)
 * **Observation:** Initial "Invalid Reply" errors were mitigated by disabling SMB signing and reducing attack threads.
 
 ### Phase 3: Detection & Analysis
+![Dashboard](img/wazuh-dashboard.png)
 Captured high-fidelity alerts in the Wazuh Dashboard:
 * **Rule 60122:** Multiple Windows Logon Failures.
 * **Rule 60115:** **Account Lockout** detected (High Severity).
 * **Rule 60118:** **Successful Logon** (The breach moment).
 
+* ![Wazuh Dashboard](img/ThreatReport.png)
+
 ---
 
 ## 🔍 Forensic Investigation (JSON Analysis)
+![JSON Analysis](img/JSon.png)
 By analyzing the raw **JSON telemetry**, I confirmed:
 * **Attacker IP:** `192.168.56.1`
 * **Target User:** `vboxuser`
