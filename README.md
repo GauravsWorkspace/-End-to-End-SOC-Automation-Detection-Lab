@@ -1,83 +1,54 @@
-🛡️ End-to-End SOC Automation & Detection Lab
-📌 Project Overview
+# 🛡️ End-to-End SOC Automation & Detection Lab
 
-This project involved building a fully functional Security Operations Center (SOC) Lab to simulate real-world cyber attacks and monitor them in real-time. I configured a Wazuh SIEM (Security Information and Event Manager) to ingest telemetry from a Windows endpoint and successfully detected a Brute-Force Attack executed from a Kali Linux machine.
+## 📌 Project Overview
+This project involved building a fully functional **Security Operations Center (SOC) Lab** to simulate real-world cyber attacks and monitor them in real-time. I configured a **Wazuh SIEM** to ingest telemetry from a Windows endpoint and successfully detected a **Brute-Force Attack** executed from a Kali Linux machine.
 
-The goal was to move beyond simple log collection and into Active Detection Engineering, mapping attack patterns to the MITRE ATT&CK Framework.
-🏗️ Lab Architecture
+---
 
-The lab environment was built using Oracle VirtualBox in a dedicated Host-Only Network (192.168.56.0/24) to ensure a safe, isolated testing environment.
+## 🏗️ Lab Architecture
+* **Attacker (Host OS):** Kali Linux (`192.168.56.1`)
+* **Victim (VM):** Windows 10 (`192.168.56.3`)
+* **SIEM/XDR (VM):** Wazuh Manager (`192.168.56.4`)
 
-    Attacker (Host OS): Kali Linux (192.168.56.1)
+> **Note:** The environment was built using **Oracle VirtualBox** in a dedicated **Host-Only Network** to ensure safe, isolated testing.
 
-    Victim (Virtual Machine): Windows 10 (192.168.56.3)
+---
 
-    SIEM/XDR (Virtual Machine): Wazuh Manager (192.168.56.4)
+## 🛠️ Tools & Technologies Used
+* **Wazuh (SIEM/XDR):** Log ingestion, analysis, and alerting.
+* **Hydra:** SMB Protocol Brute-Force simulation.
+* **PowerShell:** Endpoint hardening and Audit Policy configuration.
+* **Linux/Bash:** System administration and attack execution.
 
-🛠️ Tools & Technologies Used
+---
 
-    Wazuh (SIEM/XDR): For log ingestion, analysis, and alerting.
+## 🚀 Execution Phases
 
-    Hydra: To simulate the SMB Brute-Force attack.
+### Phase 1: Endpoint Configuration (Hardening)
+1. **Telemetry Pipeline:** Installed the Wazuh Agent on Windows and configured `ossec.conf`.
+2. **Audit Policy Tuning:** Enabled advanced auditing for "Logon" using:
+   `auditpol /set /subcategory:"Logon" /success:enable /failure:enable`
+3. **Troubleshooting:** Resolved kernel module conflicts (`/dev/vboxnetctl`) on the Kali Host.
 
-    Windows Event Viewer: For local log verification.
+### Phase 2: The Attack (SMB Brute Force)
+* **Command:** `hydra -l vboxuser -P wordlist.txt smb://192.168.56.3 -t 1 -V`
+* **Observation:** Initial "Invalid Reply" errors were mitigated by disabling SMB signing and reducing attack threads.
 
-    PowerShell: For endpoint hardening and Audit Policy configuration.
+### Phase 3: Detection & Analysis
+Captured high-fidelity alerts in the Wazuh Dashboard:
+* **Rule 60122:** Multiple Windows Logon Failures.
+* **Rule 60115:** **Account Lockout** detected (High Severity).
+* **Rule 60118:** **Successful Logon** (The breach moment).
 
-    Linux/Bash: For system administration and attack execution.
+---
 
-🚀 Execution Phases
-Phase 1: Endpoint Configuration (Hardening)
+## 🔍 Forensic Investigation (JSON Analysis)
+By analyzing the raw **JSON telemetry**, I confirmed:
+* **Attacker IP:** `192.168.56.1`
+* **Target User:** `vboxuser`
+* **Logon Type:** Type 3 (Network Login)
 
-To ensure the SIEM could "see" the attack, I performed the following:
+---
 
-    Telemetry Pipeline: Installed the Wazuh Agent on Windows and configured ossec.conf to communicate with the Manager.
-
-    Audit Policy Tuning: Enabled advanced auditing for "Logon" (Success/Failure) using:
-    auditpol /set /subcategory:"Logon" /success:enable /failure:enable
-
-    Network Troubleshooting: Resolved a kernel module conflict (/dev/vboxnetctl) on the Kali Host to establish a stable virtual network.
-
-Phase 2: The Attack (SMB Brute Force)
-
-I utilized Hydra to target the SMB protocol on the Windows machine.
-
-    Scenario: Attempting to crack the vboxuser account.
-
-    Command: hydra -l vboxuser -P /usr/share/wordlists/metasploit/unix_passwords.txt smb://192.168.56.3 -t 1 -V
-
-    Challenge: Initially met with "Invalid Reply" errors. I resolved this by disabling SMB signing and reducing thread counts to bypass basic service-level protections.
-
-Phase 3: Detection & Analysis
-
-The attack triggered several high-fidelity alerts in the Wazuh Dashboard:
-
-    Rule 60122 (Level 5): Multiple Windows Logon Failures.
-
-    Rule 60115 (Level 9): Account Lockout detected due to excessive failures.
-
-    Rule 60106 (Level 3): Successful Logon (The breach moment).
-
-    Rule 92657 (Level 6): Suspicious Remote Logon (NTLM authentication).
-
-🔍 Forensic Investigation (JSON Analysis)
-
-By deep-diving into the raw JSON telemetry, I was able to confirm:
-
-    Attacker Attribution: Source IP 192.168.56.1 identified.
-
-    Target User: vboxuser account targeted.
-
-    Logon Type 3: Confirmed the attack was a network-based logon, consistent with SMB.
-
-🎯 Key Takeaways
-
-    Visibility is King: Without proper Audit Policies, a successful breach (Event ID 4624) looks identical to a normal login.
-
-    Correlation Matters: Identifying the transition from a "Lockout" (Rule 60115) to a "Success" (Rule 60106) is critical for identifying account takeovers.
-
-    Lab Persistence: Troubleshooting VirtualBox network drivers and Windows ACL permissions was essential to maintaining a stable lab environment.
-
-📈 Next Steps (Phase 2)
-
-My next objective is to implement Active Response. I will configure the Wazuh Manager to automatically trigger a firewall block on the Attacker IP upon detecting a Brute-Force signature.
+## 📈 Next Steps (Phase 2)
+I am currently implementing **Active Response** to automatically block attacker IPs upon detecting a Brute-Force signature.
